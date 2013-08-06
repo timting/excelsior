@@ -11,16 +11,16 @@ int has_found = 0;
 
 %%{
    machine excelsior_scan;
-   delimiter = ",";
+   delimiter = "|";
    newline = "\r"? "\n" | "\r";
-   string_character = any - '"';
+   string_character = any - '`';
    letter = string_character - delimiter - newline;
    string = '"' (string_character | '""')* '"' ;
    value = letter+;
    main := |*
-		 newline { 
+		 newline {
 				if(has_found ==0) {
-					rb_ary_push((is_header_row ? header_row : arr), Qnil); 
+					rb_ary_push((is_header_row ? header_row : arr), Qnil);
 				}
 				if(!is_header_row) {
 					if(header == 1) {
@@ -31,11 +31,11 @@ int has_found = 0;
 						}
 						rb_yield(hash);
 					} else {
-						rb_yield(arr); 
+						rb_yield(arr);
 					}
 				}
-				arr = rb_ary_new(); 
-				has_found = 0; 
+				arr = rb_ary_new();
+				has_found = 0;
 				is_header_row = 0;
 		 };
      space;
@@ -44,22 +44,22 @@ int has_found = 0;
      delimiter { if(has_found == 0) rb_ary_push((is_header_row ? header_row : arr), Qnil); has_found = 0;};
    *|;
 }%%
- 
-%% write data nofinal; 
+
+%% write data nofinal;
 
 
 VALUE e_rows(int argc, VALUE *argv, VALUE self) {
-  
+
   int cs, act, have = 0, nread = 0, curline = 1, text = 0;
   char *ts = 0, *te = 0, *buf = NULL, *eof = NULL;
   int buffer_size = BUFSIZE;
-  
+
   has_found = 0;
   VALUE io;
 	VALUE options;
   int is_io = 0;
   int done = 0;
-  
+
   arr = rb_ary_new();
   rb_scan_args(argc, argv, "11", &io, &options);
 	if(options != Qnil) {
@@ -71,21 +71,21 @@ VALUE e_rows(int argc, VALUE *argv, VALUE self) {
 	}
   is_io = rb_respond_to(io, s_read);
   buf = (char *) malloc(buffer_size); //ALLOC_N(char, buffer_size); <= This caused problems
-  
+
   %% write init;
-  
+
   while(!done) {
-  
+
     int len, space = buffer_size - have;
     VALUE str;
     char *p, *pe;
     p = buf + have;
-  
+
     if(is_io) {
       str = rb_funcall(io, s_read, 1, INT2FIX(space));
       len = RSTRING_LEN(str);
       memcpy(p, StringValuePtr(str), len);
-    } else { 
+    } else {
       // Going to assume it's a string and already in memory
       //str = io;
 	  p = RSTRING_PTR(io);
@@ -94,27 +94,27 @@ VALUE e_rows(int argc, VALUE *argv, VALUE self) {
 	  eof = pe;
 	  done = 1;
     }
-  
+
     if(len < space) {
       done = 1;
       //p[len++] = 0; can't seem to get it to work with this
       pe = p + len;
       eof = pe;
     } else {
-      pe = p + len; 
+      pe = p + len;
     }
-  
+
     %% write exec;
-    
+
     if(ts != 0) { // we are not at the end
       have = pe - ts; //so copy stuff back in
       memmove(buf, ts, have);
       te = buf + (te - ts);
       ts = buf;
-    }   
-    
+    }
+
   }
-  
+
   if(RARRAY_LEN(arr) > 0) { // have a last array to yield
 		if(!is_header_row) {
 			if(header == 1) {
@@ -125,11 +125,11 @@ VALUE e_rows(int argc, VALUE *argv, VALUE self) {
 				}
 				rb_yield(hash);
 			} else {
-				rb_yield(arr); 
+				rb_yield(arr);
 			}
 		}
   }
-  
+
   return Qnil;
 }
 
