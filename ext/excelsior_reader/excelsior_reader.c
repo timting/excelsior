@@ -14,59 +14,62 @@ int has_found = 0;
 
 #line 46 "excelsior_reader.rl"
 
- 
+
 
 #line 20 "excelsior_reader.c"
 static const char _excelsior_scan_actions[] = {
-	0, 1, 2, 1, 7, 1, 8, 1, 
-	9, 1, 10, 1, 11, 2, 0, 1, 
-	2, 3, 4, 2, 3, 5, 2, 3, 
-	6
+	0, 1, 0, 1, 1, 1, 6, 1, 
+	7, 1, 8, 1, 9, 1, 10, 1, 
+	11, 2, 2, 3, 2, 2, 4, 2, 
+	2, 5
 };
 
 static const char _excelsior_scan_key_offsets[] = {
-	0, 0, 1, 8, 12, 13
+	0, 0, 2, 10, 14, 15, 19
 };
 
 static const char _excelsior_scan_trans_keys[] = {
-	34, 10, 13, 32, 34, 44, 9, 12, 
-	10, 13, 34, 44, 10, 34, 0
+	34, 96, 10, 13, 32, 34, 96, 124, 
+	9, 12, 10, 13, 96, 124, 10, 10, 
+	13, 96, 124, 34, 96, 0
 };
 
 static const char _excelsior_scan_single_lengths[] = {
-	0, 1, 5, 4, 1, 1
+	0, 2, 6, 4, 1, 4, 2
 };
 
 static const char _excelsior_scan_range_lengths[] = {
-	0, 0, 1, 0, 0, 0
+	0, 0, 1, 0, 0, 0, 0
 };
 
 static const char _excelsior_scan_index_offsets[] = {
-	0, 0, 2, 9, 14, 16
+	0, 0, 3, 11, 16, 18, 23
 };
 
 static const char _excelsior_scan_trans_targs[] = {
-	5, 1, 2, 4, 3, 1, 2, 3, 
-	3, 2, 2, 2, 2, 3, 2, 2, 
-	1, 2, 2, 2, 2, 2, 0
+	6, 2, 1, 2, 4, 3, 5, 0, 
+	2, 3, 3, 2, 2, 2, 2, 3, 
+	2, 2, 1, 1, 2, 1, 5, 6, 
+	2, 1, 2, 2, 2, 2, 2, 0
 };
 
 static const char _excelsior_scan_trans_actions[] = {
-	22, 0, 3, 0, 16, 0, 5, 16, 
-	19, 11, 11, 11, 11, 19, 3, 7, 
-	0, 9, 11, 11, 7, 9, 0
+	23, 15, 0, 5, 0, 17, 20, 0, 
+	7, 17, 20, 15, 15, 15, 15, 20, 
+	5, 9, 0, 0, 11, 0, 20, 23, 
+	13, 0, 15, 15, 9, 11, 13, 0
 };
 
 static const char _excelsior_scan_to_state_actions[] = {
-	0, 0, 13, 0, 0, 0
+	0, 0, 1, 0, 0, 0, 0
 };
 
 static const char _excelsior_scan_from_state_actions[] = {
-	0, 0, 1, 0, 0, 0
+	0, 0, 3, 0, 0, 0, 0
 };
 
 static const char _excelsior_scan_eof_trans[] = {
-	0, 20, 0, 20, 21, 22
+	0, 28, 0, 28, 29, 30, 31
 };
 
 static const int excelsior_scan_start = 2;
@@ -79,17 +82,17 @@ static const int excelsior_scan_en_main = 2;
 
 
 VALUE e_rows(int argc, VALUE *argv, VALUE self) {
-  
+
   int cs, act, have = 0, nread = 0, curline = 1, text = 0;
   char *ts = 0, *te = 0, *buf = NULL, *eof = NULL;
   int buffer_size = BUFSIZE;
-  
+
   has_found = 0;
   VALUE io;
 	VALUE options;
   int is_io = 0;
   int done = 0;
-  
+
   arr = rb_ary_new();
   rb_scan_args(argc, argv, "11", &io, &options);
 	if(options != Qnil) {
@@ -101,9 +104,9 @@ VALUE e_rows(int argc, VALUE *argv, VALUE self) {
 	}
   is_io = rb_respond_to(io, s_read);
   buf = (char *) malloc(buffer_size); //ALLOC_N(char, buffer_size); <= This caused problems
+
   
-  
-#line 107 "excelsior_reader.c"
+#line 110 "excelsior_reader.c"
 	{
 	cs = excelsior_scan_start;
 	ts = 0;
@@ -112,19 +115,19 @@ VALUE e_rows(int argc, VALUE *argv, VALUE self) {
 	}
 
 #line 76 "excelsior_reader.rl"
-  
+
   while(!done) {
-  
+
     int len, space = buffer_size - have;
     VALUE str;
     char *p, *pe;
     p = buf + have;
-  
+
     if(is_io) {
       str = rb_funcall(io, s_read, 1, INT2FIX(space));
       len = RSTRING_LEN(str);
       memcpy(p, StringValuePtr(str), len);
-    } else { 
+    } else {
       // Going to assume it's a string and already in memory
       //str = io;
 	  p = RSTRING_PTR(io);
@@ -133,18 +136,18 @@ VALUE e_rows(int argc, VALUE *argv, VALUE self) {
 	  eof = pe;
 	  done = 1;
     }
-  
+
     if(len < space) {
       done = 1;
       //p[len++] = 0; can't seem to get it to work with this
       pe = p + len;
       eof = pe;
     } else {
-      pe = p + len; 
+      pe = p + len;
     }
-  
+
     
-#line 148 "excelsior_reader.c"
+#line 151 "excelsior_reader.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -161,11 +164,11 @@ _resume:
 	_nacts = (unsigned int) *_acts++;
 	while ( _nacts-- > 0 ) {
 		switch ( *_acts++ ) {
-	case 2:
-#line 1 "excelsior_reader.rl"
+	case 1:
+#line 1 "NONE"
 	{ts = p;}
 	break;
-#line 169 "excelsior_reader.c"
+#line 172 "excelsior_reader.c"
 		}
 	}
 
@@ -187,7 +190,7 @@ _resume:
 			else if ( (*p) > *_mid )
 				_lower = _mid + 1;
 			else {
-				_trans += (_mid - _keys);
+				_trans += (unsigned int)(_mid - _keys);
 				goto _match;
 			}
 		}
@@ -210,7 +213,7 @@ _resume:
 			else if ( (*p) > _mid[1] )
 				_lower = _mid + 2;
 			else {
-				_trans += ((_mid - _keys)>>1);
+				_trans += (unsigned int)((_mid - _keys)>>1);
 				goto _match;
 			}
 		}
@@ -230,27 +233,27 @@ _eof_trans:
 	{
 		switch ( *_acts++ )
 		{
-	case 3:
-#line 1 "excelsior_reader.rl"
+	case 2:
+#line 1 "NONE"
 	{te = p+1;}
 	break;
-	case 4:
+	case 3:
 #line 41 "excelsior_reader.rl"
 	{act = 2;}
 	break;
-	case 5:
+	case 4:
 #line 42 "excelsior_reader.rl"
 	{act = 3;}
 	break;
-	case 6:
+	case 5:
 #line 43 "excelsior_reader.rl"
 	{act = 4;}
 	break;
-	case 7:
+	case 6:
 #line 21 "excelsior_reader.rl"
-	{te = p+1;{ 
+	{te = p+1;{
 				if(has_found ==0) {
-					rb_ary_push((is_header_row ? header_row : arr), Qnil); 
+					rb_ary_push((is_header_row ? header_row : arr), Qnil);
 				}
 				if(!is_header_row) {
 					if(header == 1) {
@@ -261,23 +264,23 @@ _eof_trans:
 						}
 						rb_yield(hash);
 					} else {
-						rb_yield(arr); 
+						rb_yield(arr);
 					}
 				}
-				arr = rb_ary_new(); 
-				has_found = 0; 
+				arr = rb_ary_new();
+				has_found = 0;
 				is_header_row = 0;
 		 }}
 	break;
-	case 8:
+	case 7:
 #line 44 "excelsior_reader.rl"
 	{te = p+1;{ if(has_found == 0) rb_ary_push((is_header_row ? header_row : arr), Qnil); has_found = 0;}}
 	break;
-	case 9:
+	case 8:
 #line 21 "excelsior_reader.rl"
-	{te = p;p--;{ 
+	{te = p;p--;{
 				if(has_found ==0) {
-					rb_ary_push((is_header_row ? header_row : arr), Qnil); 
+					rb_ary_push((is_header_row ? header_row : arr), Qnil);
 				}
 				if(!is_header_row) {
 					if(header == 1) {
@@ -288,24 +291,25 @@ _eof_trans:
 						}
 						rb_yield(hash);
 					} else {
-						rb_yield(arr); 
+						rb_yield(arr);
 					}
 				}
-				arr = rb_ary_new(); 
-				has_found = 0; 
+				arr = rb_ary_new();
+				has_found = 0;
 				is_header_row = 0;
 		 }}
+	break;
+	case 9:
+#line 42 "excelsior_reader.rl"
+	{te = p;p--;{ rb_ary_push((is_header_row ? header_row : arr), rb_str_new(ts, te - ts)); has_found = 1;}}
 	break;
 	case 10:
 #line 43 "excelsior_reader.rl"
 	{te = p;p--;{ rb_ary_push((is_header_row ? header_row : arr), rb_str_new(ts + 1, te - ts - 2)); has_found = 1;}}
 	break;
 	case 11:
-#line 1 "excelsior_reader.rl"
+#line 1 "NONE"
 	{	switch( act ) {
-	case 0:
-	{{cs = 0; goto _again;}}
-	break;
 	case 3:
 	{{p = ((te))-1;} rb_ary_push((is_header_row ? header_row : arr), rb_str_new(ts, te - ts)); has_found = 1;}
 	break;
@@ -318,7 +322,7 @@ _eof_trans:
 	}
 	}
 	break;
-#line 322 "excelsior_reader.c"
+#line 326 "excelsior_reader.c"
 		}
 	}
 
@@ -328,12 +332,8 @@ _again:
 	while ( _nacts-- > 0 ) {
 		switch ( *_acts++ ) {
 	case 0:
-#line 1 "excelsior_reader.rl"
+#line 1 "NONE"
 	{ts = 0;}
-	break;
-	case 1:
-#line 1 "excelsior_reader.rl"
-	{act = 0;}
 	break;
 #line 339 "excelsior_reader.c"
 		}
@@ -356,16 +356,16 @@ _again:
 	}
 
 #line 108 "excelsior_reader.rl"
-    
+
     if(ts != 0) { // we are not at the end
       have = pe - ts; //so copy stuff back in
       memmove(buf, ts, have);
       te = buf + (te - ts);
       ts = buf;
-    }   
-    
+    }
+
   }
-  
+
   if(RARRAY_LEN(arr) > 0) { // have a last array to yield
 		if(!is_header_row) {
 			if(header == 1) {
@@ -376,11 +376,11 @@ _again:
 				}
 				rb_yield(hash);
 			} else {
-				rb_yield(arr); 
+				rb_yield(arr);
 			}
 		}
   }
-  
+
   return Qnil;
 }
 
